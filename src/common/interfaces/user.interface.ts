@@ -1,6 +1,6 @@
 export interface IUser extends Document {
   name: string;
-  userName: string;
+  username: string;
   email: string;
   password: string;
 }

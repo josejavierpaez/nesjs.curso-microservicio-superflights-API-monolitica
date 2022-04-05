@@ -6,6 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "docker:mongo": "docker-compose up -d",
+    "docker:mongo-down": "docker-compose up -d",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -26,6 +28,8 @@
     "@nestjs/core": "^8.0.0",
     "@nestjs/mongoose": "^9.0.3",
     "@nestjs/platform-express": "^8.0.0",
+    "@types/bcrypt": "^5.0.0",
+    "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "mongoose": "^6.2.10",
