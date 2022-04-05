@@ -6,5 +6,5 @@ export class PassengerDTO {
   readonly name: string;
   @IsNotEmpty()
   @IsEmail()
-  readonly emial: string;
+  readonly email: string;
 }
