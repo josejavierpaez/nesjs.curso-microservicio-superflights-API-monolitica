@@ -22,7 +22,7 @@ export const FlightSchema = new mongoose.Schema(
     passengers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'passenger',
+        ref: 'passengers',
       },
     ],
   },

@@ -14,5 +14,5 @@ export class FlightDTO {
   @IsNotEmpty()
   @Type(() => Date)
   @IsDate()
-  readonly flightDate;
+  readonly flightDate: Date;
 }
