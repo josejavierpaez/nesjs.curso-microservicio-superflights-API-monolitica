@@ -10,10 +10,18 @@ import { Types } from 'mongoose';
 export class UserService {
   constructor(@InjectModel(USER.name) private readonly model: Model<IUser>) {}
 
-  async hashPassword(password: string): Promise<string> {
+  private async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hashSync(password, salt);
   }
+  async findByUsername(username: string): Promise<IUser> {
+    return await this.model.findOne({ username });
+  }
+
+  async checkPassword(password: string, passwordDB: string): Promise<boolean> {
+    return await bcrypt.compareSync(password, passwordDB);
+  }
+
   async create(userDTO: UserDTO): Promise<IUser> {
     const hash = await this.hashPassword(userDTO.password);
     const newUser = new this.model({ ...userDTO, password: hash });
