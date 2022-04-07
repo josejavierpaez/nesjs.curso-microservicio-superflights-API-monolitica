@@ -10,10 +10,12 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PassengerService } from 'src/passenger/passenger.service';
 import { FlightDTO } from './dto/flight.dto';
 import { FlightService } from './flight.service';
 
+@ApiTags('flight')
 @Controller('api/v1/flight')
 export class FlightController {
   constructor(
@@ -22,11 +24,13 @@ export class FlightController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'create flight' })
   create(@Body() flightDTO: FlightDTO) {
     return this.flightService.create(flightDTO);
   }
 
   @Post(':flightId/passenger/:passengerId')
+  @ApiOperation({ summary: 'add passengerId to flight' })
   async addPassenger(
     @Param('flightId') flightId: string,
     @Param('passengerId') passengerId: string,
@@ -37,11 +41,13 @@ export class FlightController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'get flight' })
   findAll() {
     return this.flightService.findAll();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'get flight by id' })
   async findOne(@Param('id') id: string) {
     const flight = await this.flightService.findOne(id);
     if (!flight) throw new NotFoundException('flight not found');
@@ -49,11 +55,13 @@ export class FlightController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'update flight' })
   update(@Param('id') id: string, @Body() flightDTO: FlightDTO) {
     return this.flightService.update(id, flightDTO);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'delete flight' })
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id') id: string) {
     return await this.flightService.delete(id);
