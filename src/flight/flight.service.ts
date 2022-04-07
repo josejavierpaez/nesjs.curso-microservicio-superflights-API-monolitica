@@ -1,14 +1,57 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import axios from 'axios';
+import * as moment from 'moment';
 import { FLIGHT } from 'src/common/models/intex.models';
 import { Model, Types } from 'mongoose';
 import { IFlight } from 'src/common/interfaces/flight.interface';
 import { FlightDTO } from './dto/flight.dto';
+import { ILocation } from 'src/common/interfaces/location.interface';
+import { IWeather } from 'src/common/interfaces/weather.location';
+
 @Injectable()
 export class FlightService {
   constructor(
     @InjectModel(FLIGHT.name) private readonly model: Model<IFlight>,
   ) {}
+
+  private async getLocation(destinationCity: string): Promise<ILocation> {
+    const { data } = await axios.get(
+      `https://www.metaweather.com/api/location/search/?query=${destinationCity}`,
+    );
+
+    return data[0];
+  }
+
+  private async getWeather(
+    woeid: number,
+    flightDate: Date,
+  ): Promise<IWeather[]> {
+    const dateFormat = moment.utc(flightDate).format();
+    const year = dateFormat.substring(0, 4);
+    const month = dateFormat.substring(5, 7);
+    const day = dateFormat.substring(8, 10);
+
+    const { data } = await axios.get(
+      `https://www.metaweather.com/api/location/${woeid}/${year}/${month}/${day}/`,
+    );
+
+    return data;
+  }
+
+  private assign(
+    { _id, pilot, airplane, destinationCity, passenger }: IFlight,
+    weather: IWeather[],
+  ) {
+    return Object.assign({
+      _id,
+      pilot,
+      airplane,
+      destinationCity,
+      passenger,
+      weather,
+    });
+  }
 
   async create(flightDTO: FlightDTO): Promise<IFlight> {
     const newFlight = new this.model(flightDTO);
@@ -21,7 +64,13 @@ export class FlightService {
   }
 
   async findOne(id: string): Promise<IFlight> {
-    return await this.model.findById(id).populate('passengers');
+    const flight = await this.model.findById(id).populate('passengers');
+    const location: ILocation = await this.getLocation(flight.destinationCity);
+    const weather: IWeather[] = await this.getWeather(
+      location.woeid,
+      flight.flightDate,
+    );
+    return this.assign(flight, weather);
   }
 
   async update(id: string, flightDTO: FlightDTO) {
@@ -32,20 +81,14 @@ export class FlightService {
     return await this.model.findByIdAndDelete(new Types.ObjectId(id));
   }
   async addPassenger(flightId: string, passengerId: string): Promise<IFlight> {
-    console.log({ flightId }, { passengerId });
-    try {
-      return await this.model
-        .findByIdAndUpdate(
-          flightId,
-          {
-            $addToSet: { passengers: passengerId },
-          },
-          { new: true },
-        )
-        .populate('passengers');
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+    return await this.model
+      .findByIdAndUpdate(
+        flightId,
+        {
+          $addToSet: { passengers: passengerId },
+        },
+        { new: true },
+      )
+      .populate('passengers');
   }
 }
